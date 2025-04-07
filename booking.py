@@ -1,7 +1,6 @@
 import csv
 import re
-import os
-import time  # Added import for time
+import time
 from urllib.parse import urlparse, parse_qs
 from playwright.sync_api import sync_playwright
 
@@ -17,7 +16,6 @@ def scrape_hotels(city_url):
     city = extract_city_from_url(city_url)
     all_data = []
 
-    print(f"Scraping hotels in {city}...")
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False)
         page = browser.new_page()
@@ -35,18 +33,20 @@ def scrape_hotels(city_url):
             previous_height = new_height
 
             try:
-                # Encontre o botão "Ver mais resultados" usando o Playwright
+                # Encontra o botão "Ver mais resultados" usando o Playwright
                 more_button = page.locator("button:has-text('Ver mais resultados')")
                 
                 if more_button.is_visible():
                     more_button.click()
-                    time.sleep(10)  # Aguarde a página carregar
+                    time.sleep(10)  # Aguarda a página carregar - tive que colocar 10 s mesmo
                 else:
                     break
             except Exception as e:                
                 break
 
         print("Todos os resultados carregados!")
+
+        # Entra em cada hotel
 
         hotel_cards = page.query_selector_all('[data-testid="property-card"]')
         hoteis_filtrados = []
@@ -59,7 +59,7 @@ def scrape_hotels(city_url):
                 if city.lower() in location_text:
                     hoteis_filtrados.append(hotel)
 
-        print(f"Total hotels filtered: {len(hoteis_filtrados)}")
+        print(f"Total hotéis filtrados: {len(hoteis_filtrados)}")
 
         for hotel in hoteis_filtrados:
             link_element = hotel.query_selector('a')
